@@ -50,7 +50,7 @@ public class CommonController {
         }
         //转存到配置文件指定的位置
         try {
-            file.transferTo(new File(basePath + fileName));
+            file.transferTo(new File(basePath, fileName));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -61,7 +61,7 @@ public class CommonController {
     public void download(String name, HttpServletResponse response) {
         try {
             //输入流读取文件
-            FileInputStream inputStream = new FileInputStream(basePath + name);
+            FileInputStream inputStream = new FileInputStream(new File(basePath, name));
             //设置响应格式为图片
             response.setContentType("image/jpeg");
             //输出流将文件写回浏览器

@@ -77,9 +77,6 @@ public class CategoryController {
         queryWrapper.orderByAsc(Category::getSort);
         //执行查询
         List<Category> categories = categoryService.list(queryWrapper);
-        if (categories == null) {
-            return R.error("没有找到分类信息");
-        }
         return R.success(categories);
     }
 
