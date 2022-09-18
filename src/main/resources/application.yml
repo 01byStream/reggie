@@ -11,6 +11,21 @@ spring:
       url: jdbc:mysql://localhost:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
       username: root
       password: 92010511
+  mail:
+    # 163邮箱的地址为smtp.163.com，直接填写即可
+    host: smtp.163.com
+    # 你申请的163邮箱
+    username: zjy18613237931@163.com
+    # 注意密码是在开启smtp/pop3时自动生成的，记得保存一下，不然就找不到了
+    password: JREUGXLTCOONXOVD
+  # redis默认配置，可以修改
+  redis:
+    #Redis服务器地址
+    host: localhost
+    #端口
+    port: 6379
+    #使用几号数据库
+    database: 0
 
 mybatis-plus:
   configuration:

@@ -3,6 +3,7 @@ package com.bys.reggie.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bys.reggie.common.R;
 import com.bys.reggie.dto.SetmealDto;
+import com.bys.reggie.entity.Dish;
 import com.bys.reggie.entity.Setmeal;
 import com.bys.reggie.service.SetmealService;
 import org.apache.ibatis.annotations.Delete;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -69,6 +71,19 @@ public class SetmealController {
         }).collect(Collectors.toList());
         setmealService.updateBatchById(setmeals); //批量更新状态
         return R.success("更新状态成功");
+    }
+
+    //获取菜品分类对应的套餐
+    @GetMapping("list")
+    public R<List<SetmealDto>> list(Setmeal setmeal) {
+        List<SetmealDto> setmealDtoList = setmealService.getList(setmeal);
+        return R.success(setmealDtoList);
+    }
+
+    //获取套餐下的菜品
+    @GetMapping("/dish/{id}")
+    public R<List<Dish>> getSetmealDish(@PathVariable Long id) {
+        return null;
     }
 
 }

@@ -2,8 +2,10 @@ package com.bys.reggie.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bys.reggie.dto.SetmealDto;
+import com.bys.reggie.entity.Dish;
 import com.bys.reggie.entity.Setmeal;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.bys.reggie.entity.SetmealDish;
 
 import java.util.List;
 
@@ -23,4 +25,8 @@ public interface SetmealService extends IService<Setmeal> {
     void updateWithDish(SetmealDto setmealDto);
 
     void removeWithDish(List<Long> ids);
+
+    List<SetmealDto> getList(Setmeal setmeal);
+
+    List<Dish> getSetmealOfDish(Long id);
 }

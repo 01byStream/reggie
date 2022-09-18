@@ -6,18 +6,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bys.reggie.common.R;
 import com.bys.reggie.dto.DishDto;
-import com.bys.reggie.entity.Category;
-import com.bys.reggie.entity.Dish;
-import com.bys.reggie.entity.DishFlavor;
-import com.bys.reggie.service.CategoryService;
-import com.bys.reggie.service.DishFlavorService;
-import com.bys.reggie.service.DishService;
+import com.bys.reggie.entity.*;
+import com.bys.reggie.service.*;
 import com.bys.reggie.mapper.DishMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +32,12 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
 
     @Resource
     CategoryService categoryService;
+
+    @Resource
+    SetmealDishService setmealDishService;
+
+    @Resource
+    SetmealService setmealService;
 
     /**
      * @description: 菜品信息分页查询，包括分类名称
@@ -131,11 +134,23 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
     public void removeWithFlavor(List<Long> ids) {
         //删除菜品表的记录
         this.removeByIds(ids);
-        //删除口味表的记录
+        //删除口味表的记录，停售相应的套餐
         for (Long id : ids) {
-            LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(DishFlavor::getDishId, id);
-            dishFlavorService.remove(queryWrapper);
+            //删除口味表记录
+            LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            dishFlavorLambdaQueryWrapper.eq(DishFlavor::getDishId, id);
+            dishFlavorService.remove(dishFlavorLambdaQueryWrapper);
+            //停售相应的套餐
+            LambdaQueryWrapper<SetmealDish> setmealDishLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            setmealDishLambdaQueryWrapper.eq(SetmealDish::getDishId, id);
+            List<SetmealDish> setmealDishes = setmealDishService.list(setmealDishLambdaQueryWrapper);
+            List<Setmeal> setmeals = setmealDishes.stream().map(setmealDish -> {
+                Setmeal setmeal = new Setmeal();
+                setmeal.setStatus(0);
+                setmeal.setId(setmealDish.getSetmealId());
+                return setmeal;
+            }).collect(Collectors.toList());
+            setmealService.updateBatchById(setmeals);
         }
     }
 
@@ -163,6 +178,85 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
         dishDto.setFlavors(flavorList);
 
         return R.success(dishDto);
+    }
+
+    /**
+     * @description: 更新菜品状态，包括菜品关联的套餐状态
+     * @param status 状态
+     * @param ids 菜品id列表
+     * @author Administrator
+     * @date 2022/9/12 21:42
+     */
+    @Transactional
+    @Override
+    public void updateStatus(int status, List<Long> ids) {
+        //更新菜品状态
+        List<Dish> dishList = ids.stream().map(id -> {
+            Dish dish = new Dish();
+            dish.setId(id);
+            dish.setStatus(status);
+            return dish;
+        }).collect(Collectors.toList());
+        this.updateBatchById(dishList);
+        //更新关联的套餐状态
+        for (Long id : ids) {
+            //查询套餐菜品关系表
+            LambdaQueryWrapper<SetmealDish> setmealDishLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            setmealDishLambdaQueryWrapper.eq(SetmealDish::getDishId, id);
+            List<SetmealDish> setmealDishes = setmealDishService.list(setmealDishLambdaQueryWrapper);
+            //查找菜品关联套餐
+            List<Setmeal> setmeals = setmealDishes.stream().map(setmealDish -> {
+                Setmeal setmeal = new Setmeal();
+                setmeal.setStatus(0);
+                setmeal.setId(setmealDish.getSetmealId());
+                return setmeal;
+            }).collect(Collectors.toList());
+            //更新套餐状态
+            setmealService.updateBatchById(setmeals);
+        }
+    }
+
+    /**
+     * @description: 获取菜品信息列表，包括口味信息
+     * @param dish 菜品对象
+     * @return List<DishDto>
+     * @author Administrator
+     * @date 2022/9/16 14:40
+     */
+    @Transactional
+    @Override
+    public List<DishDto> getList(Dish dish) {
+        List<DishDto> dishDtoList = null;
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        //查询分类id
+        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+        //查询起售状态的菜品
+        queryWrapper.eq(Dish::getStatus, 1);
+        //排序
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        List<Dish> dishList = this.list(queryWrapper); //得到dish列表
+        if (dishList == null) { //没有找到菜品，直接结束，返回空列表
+            return dishDtoList;
+        }
+        //复制到dto对象列表
+        dishDtoList = dishList.stream().map(dishItem -> {
+            DishDto dishDto = new DishDto();
+            BeanUtils.copyProperties(dishItem, dishDto);
+            //查询口味信息
+            LambdaQueryWrapper<DishFlavor> flavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            flavorLambdaQueryWrapper.eq(DishFlavor::getDishId, dishDto.getId());
+            List<DishFlavor> flavorList = dishFlavorService.list(flavorLambdaQueryWrapper);
+            dishDto.setFlavors(flavorList);
+            //查询分类名称
+            Category category = categoryService.getById(dishDto.getCategoryId());
+            if (category != null) {
+                dishDto.setCategoryName(category.getName());
+            }
+
+            return dishDto;
+        }).collect(Collectors.toList());
+
+        return dishDtoList;
     }
 }
 

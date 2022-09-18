@@ -32,7 +32,7 @@
                     </div>
                     <div class="divUserPhone">
                         <span>{{item.consignee}}</span>
-                        <span>{{item.sex === '0' ? '女士' : '先生'}}</span>
+                        <span>{{item.sex == '0' ? '女士' : '先生'}}</span>
                         <span>{{item.phone}}</span>
                     </div>
                     <img src="./../images/edit.png" @click.stop.prevent="toAddressEditPage(item)"/>

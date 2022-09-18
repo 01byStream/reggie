@@ -6,9 +6,11 @@ import com.bys.reggie.common.R;
 import com.bys.reggie.dto.DishDto;
 import com.bys.reggie.entity.Dish;
 import com.bys.reggie.service.DishService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,16 +74,9 @@ public class DishController {
 
     //根据分类id查询菜品信息列表
     @GetMapping("/list")
-    public R<List<Dish>> list(Dish dish) {
-        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-        //查询分类id
-        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
-        //查询起售状态的菜品
-        queryWrapper.eq(Dish::getStatus, 1);
-        //排序
-        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
-        List<Dish> dishList = dishService.list(queryWrapper);
-        return R.success(dishList);
+    public R<List<DishDto>> list(Dish dish) {
+        List<DishDto> dishDtoList = dishService.getList(dish);
+        return R.success(dishDtoList);
     }
 
 }

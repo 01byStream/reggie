@@ -24,4 +24,7 @@ public interface DishService extends IService<Dish> {
 
     R<Page> pageInfo(int page, int pageSize, String name);
 
+    void updateStatus(int status, List<Long> ids);
+
+    List<DishDto> getList(Dish dish);
 }

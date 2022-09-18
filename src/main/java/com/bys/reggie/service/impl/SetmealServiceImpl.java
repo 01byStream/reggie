@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bys.reggie.dto.SetmealDto;
 import com.bys.reggie.entity.Category;
+import com.bys.reggie.entity.Dish;
 import com.bys.reggie.entity.Setmeal;
 import com.bys.reggie.entity.SetmealDish;
 import com.bys.reggie.service.CategoryService;
+import com.bys.reggie.service.DishService;
 import com.bys.reggie.service.SetmealDishService;
 import com.bys.reggie.service.SetmealService;
 import com.bys.reggie.mapper.SetmealMapper;
@@ -28,6 +30,9 @@ import java.util.stream.Collectors;
 @Service
 public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal>
     implements SetmealService{
+
+    @Resource
+    DishService dishService;
 
     @Resource
     SetmealDishService setmealDishService;
@@ -154,6 +159,70 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal>
             setmealDishLambdaQueryWrapper.eq(SetmealDish::getSetmealId, id);
             setmealDishService.remove(setmealDishLambdaQueryWrapper);
         }
+    }
+
+    /**
+     * @description: 根据分类id获取套餐列表
+     * @param setmeal 包装分类id和状态的套餐对象
+     * @return List<Setmeal>
+     * @author Administrator
+     * @date 2022/9/16 17:17
+     */
+    @Transactional
+    @Override
+    public List<SetmealDto> getList(Setmeal setmeal) {
+        List<SetmealDto> setmealDtoList = null;
+        //查找基本的套餐信息
+        LambdaQueryWrapper<Setmeal> setmealLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        setmealLambdaQueryWrapper.eq(Setmeal::getCategoryId, setmeal.getCategoryId());
+        setmealLambdaQueryWrapper.eq(Setmeal::getStatus, 1);
+        List<Setmeal> setmealList = this.list(setmealLambdaQueryWrapper);
+        if (setmealList == null) {
+            return setmealDtoList;
+        }
+        //查找套餐菜品信息
+        setmealDtoList = setmealList.stream().map(setmealItem -> {
+            //复制到dto对象中
+            SetmealDto setmealDto = new SetmealDto();
+            BeanUtils.copyProperties(setmealItem, setmealDto);
+            //查找菜品信息列表
+            LambdaQueryWrapper<SetmealDish> setmealDishLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            setmealDishLambdaQueryWrapper.eq(SetmealDish::getSetmealId, setmealDto.getId());
+            List<SetmealDish> setmealDishList = setmealDishService.list(setmealDishLambdaQueryWrapper);
+            //放入dto对象
+            setmealDto.setSetmealDishes(setmealDishList);
+            //查找分类名称
+            Category category = categoryService.getById(setmealDto.getCategoryId());
+            if (category != null) {
+                setmealDto.setCategoryName(category.getName());
+            }
+            return setmealDto;
+        }).collect(Collectors.toList());
+
+        return setmealDtoList;
+    }
+
+    /**
+     * @description: 根据id获取套餐下的详细菜品信息
+     * @param id 套餐id
+     * @return List<Dish>
+     * @author Administrator
+     * @date 2022/9/16 17:35
+     */
+    @Override
+    public List<Dish> getSetmealOfDish(Long id) {
+        List<Dish> dishList;
+        //获取套餐菜品列表
+        LambdaQueryWrapper<SetmealDish> setmealDishLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        setmealDishLambdaQueryWrapper.eq(SetmealDish::getSetmealId, id);
+        List<SetmealDish> setmealDishList = setmealDishService.list(setmealDishLambdaQueryWrapper);
+        if (setmealDishList == null) {
+            return null;
+        }
+        dishList = setmealDishList.stream().map(
+                setmealDish -> dishService.getById(setmealDish.getDishId())).collect(Collectors.toList());
+
+        return dishList;
     }
 }
 
