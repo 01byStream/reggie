@@ -1,0 +1,40 @@
+# 测试环境
+server:
+  port: 8800
+spring:
+  # 应用名称，可自定义
+  application:
+    name: reggie-takeout
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/takeout?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      username: test
+      password: 123456
+  mail:
+    # 163邮箱的地址为smtp.163.com，直接填写即可
+    host: smtp.163.com
+    # 你申请的163邮箱
+    username: zjy18613237931@163.com
+    # 注意密码是在开启smtp/pop3时自动生成的
+    password: JREUGXLTCOONXOVD
+
+  redis:
+    #Redis服务器地址
+    host: localhost
+    #端口
+    port: 6379
+    #使用几号数据库
+    database: 0
+
+mybatis-plus:
+  configuration:
+    #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+
+reggie:
+  filePath: /home/bys/reggie
