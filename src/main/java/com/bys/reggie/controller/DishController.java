@@ -1,16 +1,13 @@
 package com.bys.reggie.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bys.reggie.common.R;
 import com.bys.reggie.dto.DishDto;
 import com.bys.reggie.entity.Dish;
 import com.bys.reggie.service.DishService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,13 +59,7 @@ public class DishController {
     //起售停售、批量起售、停售
     @PostMapping("/status/{status}")
     public R<String> status(@PathVariable int status, @RequestParam List<Long> ids) {
-        List<Dish> dishList = ids.stream().map(id -> {
-            Dish dish = new Dish();
-            dish.setId(id);
-            dish.setStatus(status);
-            return dish;
-        }).collect(Collectors.toList());
-        dishService.updateBatchById(dishList);
+        dishService.updateStatus(status, ids);
         return R.success("状态修改成功");
     }
 

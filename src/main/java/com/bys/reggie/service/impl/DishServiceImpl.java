@@ -10,11 +10,13 @@ import com.bys.reggie.entity.*;
 import com.bys.reggie.service.*;
 import com.bys.reggie.mapper.DishMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,6 +86,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
      * @author Administrator
      * @date 2022/9/10 15:18
      */
+    @CacheEvict(value = "dishCache", key = "#dishDto.categoryId")
     @Transactional
     @Override
     public void saveWithFlavor(DishDto dishDto) {
@@ -106,6 +109,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
      * @author Administrator
      * @date 2022/9/10 22:25
      */
+    @CacheEvict(value = "dishCache", key = "#dishDto.categoryId")
     @Transactional
     @Override
     public void updateWithFlavor(DishDto dishDto) {
@@ -129,6 +133,10 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
      * @author Administrator
      * @date 2022/9/11 10:35
      */
+    @Caching(evict = {
+            @CacheEvict(value = "dishCache", allEntries = true),
+            @CacheEvict(value = "setmealCache", allEntries = true)
+    })
     @Transactional
     @Override
     public void removeWithFlavor(List<Long> ids) {
@@ -187,6 +195,10 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
      * @author Administrator
      * @date 2022/9/12 21:42
      */
+    @Caching(evict = {
+            @CacheEvict(value = "dishCache", allEntries = true),
+            @CacheEvict(value = "setmealCache", allEntries = true)
+    })
     @Transactional
     @Override
     public void updateStatus(int status, List<Long> ids) {
@@ -207,7 +219,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
             //查找菜品关联套餐
             List<Setmeal> setmeals = setmealDishes.stream().map(setmealDish -> {
                 Setmeal setmeal = new Setmeal();
-                setmeal.setStatus(0);
+                setmeal.setStatus(status);
                 setmeal.setId(setmealDish.getSetmealId());
                 return setmeal;
             }).collect(Collectors.toList());
@@ -223,6 +235,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
      * @author Administrator
      * @date 2022/9/16 14:40
      */
+    @Cacheable(value = "dishCache", key = "#dish.categoryId", unless = "#dish.categoryId == null")
     @Transactional
     @Override
     public List<DishDto> getList(Dish dish) {

@@ -7,6 +7,7 @@ import com.bys.reggie.entity.Dish;
 import com.bys.reggie.entity.Setmeal;
 import com.bys.reggie.service.SetmealService;
 import org.apache.ibatis.annotations.Delete;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -62,6 +63,7 @@ public class SetmealController {
     }
 
     //停售、起售、批量停售、起售
+    @CacheEvict(value = "setmealCache", allEntries = true)
     @PostMapping("/status/{status}")
     public R<String> status(@PathVariable int status, @RequestParam List<Long> ids) {
         List<Setmeal> setmeals = ids.stream().map(id -> {

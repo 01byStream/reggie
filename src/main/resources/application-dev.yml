@@ -26,6 +26,9 @@ spring:
     port: 6379
     #使用几号数据库
     database: 0
+  cache:
+    redis:
+      time-to-live: 3600000 #设置缓存有效期，单位毫秒
 
 mybatis-plus:
   configuration:

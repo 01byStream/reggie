@@ -49,6 +49,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.4.2</version>
@@ -86,6 +91,7 @@
 
     </dependencies>
 
+    <!--多环境配置-->
     <profiles>
         <!-- 开发环境 -->
         <profile>

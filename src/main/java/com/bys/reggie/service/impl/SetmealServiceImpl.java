@@ -15,6 +15,9 @@ import com.bys.reggie.service.SetmealDishService;
 import com.bys.reggie.service.SetmealService;
 import com.bys.reggie.mapper.SetmealMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,11 +43,15 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal>
     @Resource
     CategoryService categoryService;
 
+    @Resource
+    RedisTemplate redisTemplate;
+
     /**
      * @description: 插入记录到套餐表，同时插入记录到套餐菜品关系表
      * @author Administrator
      * @date 2022/9/11 19:43
      */
+    @CacheEvict(value = "setmealCache", key = "#setmealDto.categoryId")
     @Transactional
     @Override
     public void saveWithDish(SetmealDto setmealDto) {
@@ -124,6 +131,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal>
      * @author Administrator
      * @date 2022/9/11 20:47
      */
+    @CacheEvict(value = "setmealCache", key = "#setmealDto.categoryId")
     @Transactional
     @Override
     public void updateWithDish(SetmealDto setmealDto) {
@@ -148,6 +156,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal>
      * @author Administrator
      * @date 2022/9/11 21:13
      */
+    @CacheEvict(value = "setmealCache", allEntries = true) //全部删除
     @Transactional
     @Override
     public void removeWithDish(List<Long> ids) {
@@ -168,13 +177,14 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal>
      * @author Administrator
      * @date 2022/9/16 17:17
      */
+    @Cacheable(value = "setmealCache", key = "#setmeal.categoryId", unless = "#setmeal.categoryId == null")
     @Transactional
     @Override
     public List<SetmealDto> getList(Setmeal setmeal) {
         List<SetmealDto> setmealDtoList = null;
         //查找基本的套餐信息
         LambdaQueryWrapper<Setmeal> setmealLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        setmealLambdaQueryWrapper.eq(Setmeal::getCategoryId, setmeal.getCategoryId());
+        setmealLambdaQueryWrapper.eq(setmeal.getCategoryId() != null, Setmeal::getCategoryId, setmeal.getCategoryId());
         setmealLambdaQueryWrapper.eq(Setmeal::getStatus, 1);
         List<Setmeal> setmealList = this.list(setmealLambdaQueryWrapper);
         if (setmealList == null) {
