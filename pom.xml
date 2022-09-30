@@ -37,7 +37,7 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <scope>compile</scope>
         </dependency>
-<!--邮箱服务-->
+        <!--邮箱服务-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
@@ -69,6 +69,12 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.76</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+            <version>4.0.0-RC1</version>
         </dependency>
 
         <dependency>

@@ -1,16 +1,47 @@
 # 开发环境
 server:
   port: 8080
+
 spring:
   # 应用名称，可自定义
   application:
     name: reggie-take-out
-  datasource:
-    druid:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
-      username: root
-      password: 92010511
+
+  shardingsphere:
+    datasource:
+      names:
+        master,slave
+      # 主数据源
+      master:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://192.168.43.231:3306/takeout?characterEncoding=utf-8
+        username: root
+        password: 123456
+      # 从数据源
+      slave:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://192.168.43.95:3306/takeout?characterEncoding=utf-8
+        username: root
+        password: 123456
+    masterslave:
+      # 读写分离配置
+      load-balance-algorithm-type: round_robin #轮询
+      # 最终的数据源名称
+      name: dataSource
+      # 主库数据源名称
+      master-data-source-name: master
+      # 从库数据源名称列表，多个逗号分隔
+      slave-data-source-names: slave
+    props:
+      sql:
+        show: true #开启SQL显示，默认false
+
+  # 允许相同配置项覆盖，防止启动失败
+  main:
+    allow-bean-definition-overriding: true
+
   mail:
     # 163邮箱的地址为smtp.163.com，直接填写即可
     host: smtp.163.com
@@ -18,6 +49,7 @@ spring:
     username: zjy18613237931@163.com
     # 注意密码是在开启smtp/pop3时自动生成的，记得保存一下，不然就找不到了
     password: JREUGXLTCOONXOVD
+
   # redis默认配置，可以修改
   redis:
     #Redis服务器地址
@@ -26,9 +58,11 @@ spring:
     port: 6379
     #使用几号数据库
     database: 0
+
   cache:
     redis:
       time-to-live: 3600000 #设置缓存有效期，单位毫秒
+
 
 mybatis-plus:
   configuration:
@@ -38,6 +72,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: ASSIGN_ID
+
 
 reggie:
   filePath: D:/file/reggie
