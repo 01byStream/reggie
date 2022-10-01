@@ -32,12 +32,18 @@ public class LoginCheckFilter implements Filter {
         String url = request.getRequestURI();
         //无条件放行的请求
         String[] urls = new String[] {
+                //前端路径
                 "/employee/login",
                 "/employee/logout",
                 "/backend/**",
                 "/front/**",
                 "/user/sendMsg",
-                "/user/login"
+                "/user/login",
+                //Swagger接口路径
+                "/doc.html",
+                "/webjars/**",
+                "/swagger-resources",
+                "/v2/api-docs"
         };
         //2. 判断本次请求是否需要处理，不需要则放行
         if (check(urls, url)) {

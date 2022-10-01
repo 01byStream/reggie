@@ -6,6 +6,8 @@ import com.bys.reggie.common.BaseContext;
 import com.bys.reggie.common.R;
 import com.bys.reggie.entity.AddressBook;
 import com.bys.reggie.service.AddressBookService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/addressBook")
+@Api(tags = "地址相关接口")
 public class AddressBookController {
 
     @Resource
@@ -26,6 +29,7 @@ public class AddressBookController {
     /**
      * 新增地址
      */
+    @ApiOperation(value = "新增地址接口")
     @PostMapping
     public R<AddressBook> save(@RequestBody AddressBook addressBook) {
         addressBook.setUserId(BaseContext.getCurrentId());

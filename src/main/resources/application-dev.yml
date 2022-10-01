@@ -5,7 +5,7 @@ server:
 spring:
   # 应用名称，可自定义
   application:
-    name: reggie-take-out
+    name: flybird-takeout
 
   shardingsphere:
     datasource:

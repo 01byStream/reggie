@@ -5,6 +5,10 @@ import com.bys.reggie.common.R;
 import com.bys.reggie.dto.DishDto;
 import com.bys.reggie.entity.Dish;
 import com.bys.reggie.service.DishService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -19,6 +23,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/dish")
+@Api(tags = "菜品相关接口")
 public class DishController {
     @Resource
     private DishService dishService;
@@ -45,6 +50,12 @@ public class DishController {
     }
 
     //分页查询
+    @ApiOperation(value = "菜品分页查询接口")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", value = "页码", required = true),
+            @ApiImplicitParam(name = "pageSize", value = "每页菜品数", required = true),
+            @ApiImplicitParam(name = "name", value = "菜品名称", required = false)
+    })
     @GetMapping("/page")
     public R<Page> page(int page, int pageSize, String name) {
         return dishService.pageInfo(page, pageSize, name);
